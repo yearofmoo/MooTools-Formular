@@ -7,11 +7,24 @@ Formular = new Class({
   Extends : Form.Validator,
 
   options : {
+
+    onBeforeSubmit : $empty,
+    onAfterSubmit : $empty,
+    onSuccess : $empty,
+    onFailure : $empty,
+    onFieldSuccess : $empty,
+    onFieldFailure : $empty,
+    onFocus : $empty,
+    onBlur : $empty,
+
     theme : 'red',
     tipOffset : {
       x : -10,
       y : 0
     },
+    allowClose : true,
+    animateFields : true,
+    validationFailedAnimationClassName : 'formular-validation-failed',
     fieldSelectors : 'input.required',
     allFieldSelectors : 'input[type="text"],textarea,select',
     errorClassName : 'formular-inline',
@@ -156,6 +169,10 @@ Formular = new Class({
       }
     });
 
+    var close = '';
+    if(this.options.allowClose) {
+      close = '<div class="close"></div>';
+    }
     var contents = '<table>'+
                    '<tr>'+
                    '<td class="tl x xy"></td>'+
@@ -164,7 +181,7 @@ Formular = new Class({
                    '</tr>'+
                    '<tr>'+
                    '<td class="l x"></td>'+
-                   '<td class="c"><div class="close"></div><div class="txt"></div></td>'+
+                   '<td class="c">'+close+'<div class="txt"></div></td>'+
                    '<td class="r x"></td>'+
                    '</tr>'+
                    '<tr>'+
@@ -176,16 +193,18 @@ Formular = new Class({
     elm.set('html',contents);
     elm.store('element',element);
 
-    var close = elm.getElement('.close');
-    if(close) {
-      close.addEvent('click',function(event) {
-        event.stop();
-        var box = $(event.target).getParent('.'+this.options.errorClassName);
-        var element = box.retrieve('element');
-        if(box) {
-          this.hideError(element);
-        }
-      }.bind(this));
+    if(this.options.allowClose) {
+      close = elm.getElement('.close');
+      if(close) {
+        close.addEvent('click',function(event) {
+          event.stop();
+          var box = $(event.target).getParent('.'+this.options.errorClassName);
+          var element = box.retrieve('element');
+          if(box) {
+            this.hideError(element);
+          }
+        }.bind(this));
+      }
     }
 
     return elm;
@@ -323,6 +342,10 @@ Formular = new Class({
 
   onElementPass : function(element) {
     this.hideError(element);
+    var klass = this.options.validationFailedAnimationClassName;
+    if(klass && element.hasClass(klass)) {
+      element.removeClass(klass);
+    }
   },
 
   onElementFail : function(element,validators) {
@@ -343,6 +366,21 @@ Formular = new Class({
 
   onElementError : function(element,message) {
     this.showError(element,message);
+    var klass = this.options.validationFailedAnimationClassName;
+    if(klass) {
+      if(this.options.animateFields) {
+        var existingStyles = element.getProperty('style');
+        var m = element.get('morph');
+        m.start('.'+klass).chain(function() {
+          element.addClass(klass);
+          element.setProperty('style',existingStyles);
+        });
+      }
+      else {
+        element.addClass(klass);
+      }
+    }
+
   },
 
   validateFieldset : function(fieldset) {
