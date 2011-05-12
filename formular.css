@@ -1,0 +1,87 @@
+.formular-inline {
+  z-index:1000;
+}
+
+.formular-prefix {
+  display:block;
+}
+
+.formular-inline td {
+  background-repeat:no-repeat;
+  background-position:center center;
+}
+
+.formular-inline .c {
+  color:white;
+  background:url(themes/red/c.png) repeat;
+  font-size:0.8em;
+  white-space:nowrap;
+}
+
+.formular-inline .x {
+  width:16px;
+}
+
+.formular-inline .y {
+  width:16px;
+}
+
+.formular-inline td {
+  background-repeat:no-repeat;
+  background-position:center center;
+}
+
+.formular-inline .tl {
+  background-image:url(themes/red/tl.png);
+}
+
+.formular-inline .tr {
+  width:16px;
+  height:16px;
+  background-image:url(themes/red/tr.png);
+}
+
+.formular-inline .l {
+  background:url(themes/red/l.png) repeat-y;
+}
+
+.formular-inline .t {
+  background:url(themes/red/t.png) repeat-x;
+}
+
+.formular-inline .r {
+  background:url(themes/red/r.png) repeat-y;
+}
+
+.formular-inline .bl {
+  width:16px;
+  height:25px;
+  background-image:url(themes/red/bl.png);
+}
+
+.formular-inline .br {
+  width:16px;
+  height:25px;
+  background-image:url(themes/red/br.png);
+}
+
+.formular-inline .b {
+  background:url(themes/red/b.png) no-repeat left center;
+}
+
+.formular-inline .close {
+  background:url(themes/red/close.png) no-repeat right center;
+  cursor:pointer;
+  width:10px;
+  height:10px;
+  float:right;
+}
+
+.formular-inline .txt {
+  padding-right:20px;
+}
+
+.formular-inline .txt:first-word {
+  display:block;
+}
+
