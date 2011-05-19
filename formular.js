@@ -30,7 +30,7 @@ Formular = new Class({
     errorClassName : 'formular-inline',
     disableClassName : 'disabled',
     warningPrefix : 'There was an error: ',
-    submitFormOnSuccess : true,
+    submitFormOnSuccess : false,
     disableFieldsOnSuccess : true,
     disableButtonsOnSuccess : true,
     inputEscapeKeyEvent : true,
@@ -65,7 +65,6 @@ Formular = new Class({
 
     this.parent(this.form,options);
     this.setTheme(this.options.theme);
-
     if(this.options.inputEscapeKeyEvent) {
       var fields = this.getFields();
       fields.addEvents({
@@ -183,7 +182,7 @@ Formular = new Class({
   },
 
   getBoxZIndex : function() {
-    return this.optoins.boxZIndex;
+    return this.options.boxZIndex;
   },
 
   createErrorBox : function(element) {
