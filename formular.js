@@ -50,7 +50,9 @@ Formular = new Class({
     this.form = $(form);
     this.form.addClass('formular');
     this.form.addEvent('submit',function(event) {
-      this.fireEvent('beforeSubmit');
+      if(this.options.submitFormOnSuccess) {
+        this.fireEvent('beforeSubmit');
+      }
       if(!this.options.submitFormOnSuccess) {
         event.preventDefault();
       }
@@ -388,7 +390,9 @@ Formular = new Class({
     this.fireEvent('success');
     this.submitting = !!this.hasSubmitted;
     if(this.submitting) {
-      this.fireEvent('afterSubmit');
+      if(this.options.submitFormOnSuccess) {
+        this.fireEvent('afterSubmit');
+      }
     }
   },
 
