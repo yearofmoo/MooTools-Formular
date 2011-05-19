@@ -30,7 +30,7 @@ Formular = new Class({
     errorClassName : 'formular-inline',
     disableClassName : 'disabled',
     warningPrefix : 'There was an error: ',
-    submitFormOnSuccess : false,
+    submitFormOnSuccess : true,
     disableFieldsOnSuccess : true,
     disableButtonsOnSuccess : true,
     inputEscapeKeyEvent : true,
