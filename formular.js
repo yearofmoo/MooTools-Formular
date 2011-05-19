@@ -1,5 +1,7 @@
 var Formular;
 
+$empty = $empty || function() { };
+
 (function($) {
 
 Formular = new Class({
@@ -48,6 +50,7 @@ Formular = new Class({
     this.form = $(form);
     this.form.addClass('formular');
     this.form.addEvent('submit',function(event) {
+      this.fireEvent('beforeSubmit');
       if(!this.options.submitFormOnSuccess) {
         event.preventDefault();
       }
@@ -65,28 +68,34 @@ Formular = new Class({
 
     this.parent(this.form,options);
     this.setTheme(this.options.theme);
-    if(this.options.inputEscapeKeyEvent) {
-      var fields = this.getFields();
-      fields.addEvents({
-        'focus' : function(event) {
-          var input = $(event.target);
-          this.activeInput = input;
-        }.bind(this),
-        'blur' : function() {
-          var input = $(event.target);
-          if(this.activeInput && this.activeInput == input) {
-            this.activeInput = null;
-          }
-        }.bind(this),
-        'keydown' : function(event) {
+    var fields = this.getFields();
+    fields.addEvents({
+
+      'focus' : function(event) {
+        var input = $(event.target);
+        this.activeInput = input;
+        this.fireEvent('focus',[input]);
+      }.bind(this),
+
+      'blur' : function() {
+        var input = $(event.target);
+        if(this.activeInput && this.activeInput == input) {
+          this.activeInput = null;
+        }
+        this.fireEvent('blur',[input]);
+      }.bind(this),
+
+      'keydown' : function(event) {
+        if(this.options.inputEscapeKeyEvent) {
           var input = $(event.target);
           var key = event.key;
           if(input && this.activeInput == input && key == 'esc') {
             this.hideError(input);
           }
-        }.bind(this)
-      });
-    }
+        }
+      }.bind(this)
+
+    });
 
     if(this.options.repositionBoxesOnWindowResize) {
       window.addEvent('resize',this.repositionBoxes.bind(this));
@@ -354,6 +363,7 @@ Formular = new Class({
       if(this.options.scrollToFirstError) {
         this.scrollToFirstVisibleError();
       }
+      this.onValidationFailure();
     }
   },
 
@@ -377,6 +387,13 @@ Formular = new Class({
     }
     this.fireEvent('success');
     this.submitting = !!this.hasSubmitted;
+    if(this.submitting) {
+      this.fireEvent('afterSubmit');
+    }
+  },
+
+  onValidationFailure : function() {
+    this.fireEvent('failure');
   },
 
   onElementPass : function(element) {
@@ -385,6 +402,7 @@ Formular = new Class({
     if(klass && element.hasClass(klass)) {
       element.removeClass(klass);
     }
+    this.fireEvent('fieldSuccess',[element]);
   },
 
   onElementFail : function(element,validators) {
@@ -404,6 +422,7 @@ Formular = new Class({
         this.onElementError(element,error);
       }
     }
+    this.fireEvent('fieldFailure',[element,validators]);
   },
 
   onElementError : function(element,message) {
