@@ -35,10 +35,13 @@ Formular = new Class({
     disableButtonsOnSuccess : true,
     inputEscapeKeyEvent : true,
     repositionBoxesOnWindowResize : true,
+    repositionBoxesOnWindowScroll : true,
     serial : true,
     oneErrorAtATime : true,
     scrollToFirstError : true,
-    focusOnFirstError : true
+    focusOnFirstError : true,
+    stopSubmissionRequestOnCancel : true,
+    boxZIndex : 1000
   },
 
   initialize : function(form,options) {
@@ -89,16 +92,25 @@ Formular = new Class({
     if(this.options.repositionBoxesOnWindowResize) {
       window.addEvent('resize',this.repositionBoxes.bind(this));
     }
+    if(this.options.repositionBoxesOnWindowScroll) {
+      document.addEvent('scroll',this.repositionBoxes.bind(this));
+    }
   },
 
   setTheme : function(theme) {
-    var previous = this.getTheme();
-    var p = 'formular-';
-    this.getForm().removeClass(p + previous).addClass(p + theme);
+    for(var i in this.boxes) {
+      var box = this.boxes[i];
+      box.removeClass(this.getThemeClassName()).addClass('formular-' + theme);
+    }
+    this.options.theme = theme;
   },
 
   getTheme : function() {
     return this.options.theme;
+  },
+
+  getThemeClassName : function() {
+    return 'formular-' + this.getTheme();
   },
 
   repositionBoxes : function() {
@@ -121,7 +133,7 @@ Formular = new Class({
   },
 
   getButtons : function() {
-    return this.getForm().getElements('input[type="submit"],button,input[type="button"],input[type="reset"]');
+    return $(this.getForm()).getElements('input[type="submit"],button,input[type="button"],input[type="reset"]');
   },
 
   disableButtons : function() {
@@ -158,14 +170,29 @@ Formular = new Class({
       }
     }
     return this.parent(field,force);
-  }, 
+  },
+
+  setBoxZIndex : function(zIndex) {
+    this.options.boxZIndex = zIndex;
+    for(var i in this.boxes) {
+      var box = this.boxes[i];
+      if(box && box.setStyle) {
+        box.setStyle('z-index',zIndex);
+      }
+    }
+  },
+
+  getBoxZIndex : function() {
+    return this.optoins.boxZIndex;
+  },
 
   createErrorBox : function(element) {
     var elm = new Element('div',{
-      'class':this.options.errorClassName, 
+      'class':this.options.errorClassName + ' ' + this.getThemeClassName(),
       'styles':{
         'position':'absolute',
-        'display':'none'
+        'display':'none',
+        'z-index':this.getBoxZIndex()
       }
     });
 
@@ -201,6 +228,7 @@ Formular = new Class({
           var box = $(event.target).getParent('.'+this.options.errorClassName);
           var element = box.retrieve('element');
           if(box) {
+            this.blur();
             this.hideError(element);
           }
         }.bind(this));
@@ -208,6 +236,10 @@ Formular = new Class({
     }
 
     return elm;
+  },
+
+  blur : function() {
+    this.getFields()[0].blur();
   },
 
   getErrorBox : function(element) {
@@ -233,12 +265,17 @@ Formular = new Class({
     }
   },
 
+  getErrorBoxMessage : function(box) {
+    return box.getElement('.txt').get('html');
+  },
+
   setErrorBoxMessage : function(box,message) {
     message = '<em class="formular-prefix">' + this.options.warningPrefix + '</em>' + message;
     box.getElement('.txt').set('html',message);
   },
 
   positionErrorBox : function(box,element) {
+    if(!element) return;
     var sizes = box.getDimensions();
     var coords = element.getCoordinates();
     var CENTER_TIP_POSITION_X = -40;
@@ -261,6 +298,7 @@ Formular = new Class({
   showError : function(element,message) {
     var box = this.getErrorBox(element);
     if(box) {
+      var old = this.getErrorBoxMessage(box);
       this.setErrorBoxMessage(box,message);
       this.positionErrorBox(box,element);
       if(box.getStyle('display') != 'block') {
@@ -268,6 +306,9 @@ Formular = new Class({
           'opacity':0,
           'display':'block'
         }).tween('opacity',1);
+      }
+      else if(old != message) { 
+        box.setOpacity(0.5).fade(1);
       }
     }
   },
@@ -308,7 +349,6 @@ Formular = new Class({
       this.onValidationSuccess();
     }
     else { //there must exist an error
-
       if(this.options.focusOnFirstError) {
         this.focusOnFirstVisibleError(); 
       }
@@ -353,7 +393,10 @@ Formular = new Class({
     if(val) {
 
       if(this.options.oneErrorAtATime && this.anyErrorBoxesVisible()) {
-        return;
+        var visible = this.getFirstVisibleErrorBox();
+        if(visible.retrieve('element') != element) {
+          return;
+        }
       }
 
       var validator = this.getValidator(val);
@@ -369,7 +412,7 @@ Formular = new Class({
     var klass = this.options.validationFailedAnimationClassName;
     if(klass) {
       if(this.options.animateFields) {
-        var existingStyles = element.getProperty('style');
+        var existingStyles = element.retrieve('existingStyles',element.style);
         var m = element.get('morph');
         m.start('.'+klass).chain(function() {
           element.addClass(klass);
@@ -411,7 +454,7 @@ Formular = new Class({
   },
 
   cancel : function() {
-    if(this.isSubmitting()) {
+    if(this.isSubmitting() && this.options.stopSubmissionRequestOnCancel) {
       window.ie ? document.execCommand('Stop') : window.stop();
     }
     this.enableFields();

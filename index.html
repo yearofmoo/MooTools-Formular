@@ -9,8 +9,8 @@
 <link rel="stylesheet" type="text/css" href="./reset.css" /> 
 <link rel="stylesheet" type="text/css" href="./formular.css" /> 
 <style type="text/css">
-  html {
-    font-size:20px;
+  html,body,input,select,textarea,option,pre,code {
+    font-size:15px;
     font-family:Verdana;
   }
   form {
@@ -21,9 +21,10 @@
     border-color:#FF5555!important;
   }
   input[type="text"] {
-    border:2px solid #aaa;
-    padding:5px;
-    width:200px;
+    border:1px solid #999;
+    border-radius:2px;
+    padding:8px;
+    width:300px;
   }
 .disabled {
   color:#888;
@@ -31,13 +32,67 @@
   background:#bbb;
   font-weight:bold;
 }
+.controls {
+  padding:10px;
+  color:white;
+  background:black;
+  padding-left:100px;
+  box-shadow:0 0 50px #999;
+}
+.actions {
+  border-top:1px solid #ddd;
+  padding-top:2em;
+  margin-top:2em;
+}
+.styled header {
+  display:none;
+}
+.styled ol {
+  display:table;
+} 
+.item {
+  display:table-row;
+}
+.label,.field {
+  padding:2px 10px;
+  display:table-cell;
+}
+.actions input {
+  padding:5px 50px;
+  border:2px solid #ddd;
+  cursor:pointer;
+  border-radius:20px;
+  background:white;
+  box-shadow:0 0 5px #ddd;
+  color:#555;
+  margin-left:100px;
+}
+.actions input:hover {
+  color:black;
+}
+.actions input:active {
+  background:#f7f7f7;
+  position:relative;
+  top:1px;
+}
 </style>
 </head> 
 
 <body id="" class=""> 
   <div id="wrapper"> 
     <section id="content">
-      <form id="form" class="styled" action="">
+      <div class="controls">
+        Switch Theme:
+        <select id="theme">
+          <option>red</option>
+          <option>blue</option>
+          <option>green</option>
+          <option>black</option>
+          <option>white</option>
+          <option>grey</option>
+        </select>
+      </div>
+      <form id="form" class="styled" action="./response.php">
         <header>
           <h3 class="heading">Some Form</h3>
         </header>
@@ -45,6 +100,7 @@
           <ol>
             <li class="item">
               <div class="label">
+                <label for="mother">* Normal Field: </label>
               </div>
               <div class="field">
                 <input id="mother" class="required" type="text" />
@@ -52,9 +108,42 @@
             </li>
             <li class="item">
               <div class="label">
+                <label for="mother1">Non Required Field: </label>
               </div>
               <div class="field">
-                <input id="mother2" class="required" type="text" />
+                <input id="mother1" class="validate-alpha" type="text" />
+              </div>
+            </li>
+            <li class="item">
+              <div class="label">
+                <label for="mother2">* Email Field: </label>
+              </div>
+              <div class="field">
+                <input id="mother2" class="required validate-email" type="text" />
+              </div>
+            </li>
+            <li class="item">
+              <div class="label">
+                <label for="mother">* Date Field: </label>
+              </div>
+              <div class="field">
+                <input id="mother3" type="text" class="required validate-date dateFormat:'%d/%m/%Y'" />
+              </div>
+            </li>
+            <li class="item">
+              <div class="label">
+                <label for="mother">* Check Box:</label>
+              </div>
+              <div class="field">
+                <input type="checkbox" class="required" value="true" /> This Checkbox must be selected
+              </div>
+            </li>
+            <li class="item">
+              <div class="label">
+                <label for="mother">* URL: </label>
+              </div>
+              <div class="field">
+                <input id="mother4" class="required validate-url" type="text" />
               </div>
             </li>
           </ol>
@@ -71,9 +160,17 @@
 <script type="text/javascript">
 window.addEvent('domready',function() {
 
-  new Formular('form',{
+  var stage = new Element('div#stage').injectBefore('form');
+  var formular = new Formular('form',{
 
   });
+
+  new Form.Request('form',stage);
+
+  $('theme').addEvent('change',function(event) {
+    formular.setTheme($(event.target).get('value'));   
+  });
+
 
 });
 </script>

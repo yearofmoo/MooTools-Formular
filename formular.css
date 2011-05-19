@@ -143,6 +143,7 @@
 .formular-white .b { background:url(themes/white/b.png) no-repeat left center; }
 .formular-white .close { background:url(themes/white/close.png) no-repeat right center; }
 
+.formular-grey .txt { color:white; }
 .formular-grey .c { background:url(themes/grey/c.png) repeat; }
 .formular-grey .tl { background-image:url(themes/grey/tl.png); }
 .formular-grey .tr { background-image:url(themes/grey/tr.png); }
