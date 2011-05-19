@@ -70,7 +70,7 @@ Formular = new Class({
 
     this.parent(this.form,options);
     this.setTheme(this.options.theme);
-    var fields = this.getFields();
+    var fields = this.getAllFields();
     fields.addEvents({
 
       'focus' : function(event) {
