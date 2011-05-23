@@ -1,6 +1,8 @@
 var Formular;
 
-$empty = $empty || function() { };
+if(!window.$empty) {
+  var $empty = function() { };
+}
 
 (function($) {
 
