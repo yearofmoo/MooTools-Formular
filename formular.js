@@ -1,6 +1,6 @@
 var Formular;
 
-$empty = $empty || function() { };
+$empty = function() { };
 
 (function($) {
 
@@ -79,7 +79,7 @@ Formular = new Class({
         this.fireEvent('focus',[input]);
       }.bind(this),
 
-      'blur' : function() {
+      'blur' : function(event) {
         var input = $(event.target);
         if(this.activeInput && this.activeInput == input) {
           this.activeInput = null;
@@ -259,7 +259,7 @@ Formular = new Class({
     var id = element.id;
     if(!this.boxes[id]) {
       var box = this.createErrorBox(element);
-      box.injectInside(document.body);
+      box.inject(document.body, 'bottom');
 
       this.boxes[id] = box;
     }
