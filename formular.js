@@ -3,7 +3,6 @@ var Formular;
 if(!window.$empty) {
   var $empty = function() { };
 }
-
 (function($) {
 
 Formular = new Class({
@@ -27,13 +26,14 @@ Formular = new Class({
       y : 0
     },
     allowClose : true,
-    animateFields : true,
+    animateFields : false,
     validationFailedAnimationClassName : 'formular-validation-failed',
-    fieldSelectors : 'input.required',
-    allFieldSelectors : 'input[type="text"],textarea,select',
+    fieldSelectors : '.required',
+    allFieldSelectors : '.text,textarea,select',
+    allButtonSelectors : 'input[type="submit"],button,input[type="button"],input[type="reset"]',
     errorClassName : 'formular-inline',
     disableClassName : 'disabled',
-    warningPrefix : 'There was an error: ',
+    warningPrefix : 'There was an error...',
     submitFormOnSuccess : true,
     disableFieldsOnSuccess : true,
     disableButtonsOnSuccess : true,
@@ -45,7 +45,8 @@ Formular = new Class({
     scrollToFirstError : true,
     focusOnFirstError : true,
     stopSubmissionRequestOnCancel : true,
-    boxZIndex : 1000
+    proxyElementStorageKey : 'Formular-element-proxy',
+    boxZIndex : 3000
   },
 
   initialize : function(form,options) {
@@ -81,7 +82,7 @@ Formular = new Class({
         this.fireEvent('focus',[input]);
       }.bind(this),
 
-      'blur' : function() {
+      'blur' : function(event) {
         var input = $(event.target);
         if(this.activeInput && this.activeInput == input) {
           this.activeInput = null;
@@ -129,11 +130,16 @@ Formular = new Class({
     var boxes = this.boxes;
     for(var i in boxes) {
       var box = boxes[i];
-      var element = box.retrieve('element');
+      var element = $(box).retrieve('element');
+      element = this.getProxyElement(element);
       if(box.getStyle('display','block')) {
         this.positionErrorBox(box,element);
       } 
     }
+  },
+
+  getProxyElement : function(element) {
+    return element.retrieve(this.options.proxyElementStorageKey) || element;
   },
 
   getForm : function() {
@@ -145,28 +151,36 @@ Formular = new Class({
   },
 
   getButtons : function() {
-    return $(this.getForm()).getElements('input[type="submit"],button,input[type="button"],input[type="reset"]');
+    return $(this.getForm()).getElements(this.options.allButtonSelectors);
   },
 
   disableButtons : function() {
-    this.getButtons().setProperty('disabled',1);
+    this.getButtons().each(function(button) {
+      button.setProperty('disabled',1);
+      button.addClass(this.options.disableClassName);
+    },this);
   },
 
   enableButtons : function() {
-    this.getButtons().setProperty('disabled',0);
+    this.getButtons().each(function(button) {
+      button.setProperty('disabled','');
+      button.removeClass(this.options.disableClassName);
+    },this);
   },
 
   disableFields : function() {
     this.getAllFields().each(function(field) {
+      field = this.getProxyElement(field);
       field.addClass(this.options.disableClassName);
       field.setProperty('readonly','1');
     },this);
   },
 
   enableFields : function() {
-    this.getFields().each(function(field) {
+    this.getAllFields().each(function(field) {
+      field = this.getProxyElement(field);
       field.removeClass(this.options.disableClassName);
-      field.setProperty('readonly','0');
+      field.setProperty('readonly','');
     },this);
   },
 
@@ -261,7 +275,7 @@ Formular = new Class({
     var id = element.id;
     if(!this.boxes[id]) {
       var box = this.createErrorBox(element);
-      box.injectInside(document.body);
+      box.inject(document.body,'inside');
 
       this.boxes[id] = box;
     }
@@ -310,6 +324,7 @@ Formular = new Class({
   showError : function(element,message) {
     var box = this.getErrorBox(element);
     if(box) {
+      element = this.getProxyElement(element);
       var old = this.getErrorBoxMessage(box);
       this.setErrorBoxMessage(box,message);
       this.positionErrorBox(box,element);
@@ -435,6 +450,7 @@ Formular = new Class({
     this.showError(element,message);
     var klass = this.options.validationFailedAnimationClassName;
     if(klass) {
+      element = this.getProxyElement(element);
       if(this.options.animateFields) {
         var existingStyles = element.retrieve('existingStyles',element.style);
         var m = element.get('morph');
@@ -477,6 +493,12 @@ Formular = new Class({
     this.validate();
   },
 
+  resetForm : function() {
+    this.getAllFields().setProperty('value','');
+    this.enableFields();
+    this.enableButtons();
+  },
+
   cancel : function() {
     if(this.isSubmitting() && this.options.stopSubmissionRequestOnCancel) {
       window.ie ? document.execCommand('Stop') : window.stop();
@@ -492,7 +514,7 @@ Formular = new Class({
     this.reset();
     this.destroyAllBoxes();
     this.getForm().store('Formular',null);
-    this.getForm().destroy();
+    //this.getForm().destroy();
   }
 
 });
