@@ -130,11 +130,13 @@ Formular = new Class({
     var boxes = this.boxes;
     for(var i in boxes) {
       var box = boxes[i];
-      var element = $(box).retrieve('element');
-      element = this.getProxyElement(element);
-      if(box.getStyle('display','block')) {
-        this.positionErrorBox(box,element);
-      } 
+      if(box) {
+        var element = $(box).retrieve('element');
+        element = this.getProxyElement(element);
+        if(box.getStyle('display','block')) {
+          this.positionErrorBox(box,element);
+        } 
+      }
     }
   },
 
