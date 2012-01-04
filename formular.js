@@ -62,6 +62,7 @@ Formular = new Class({
       else {
         this.hasSubmitted = true;
       }
+      this.fireEvent('success');
     }.bind(this));
 
     options = options || {};
@@ -113,7 +114,9 @@ Formular = new Class({
   setTheme : function(theme) {
     for(var i in this.boxes) {
       var box = this.boxes[i];
-      box.removeClass(this.getThemeClassName()).addClass('formular-' + theme);
+      if(box) {
+        box.removeClass(this.getThemeClassName()).addClass('formular-' + theme);
+      }
     }
     this.options.theme = theme;
   },
@@ -254,8 +257,8 @@ Formular = new Class({
         close.addEvent('click',function(event) {
           event.stop();
           var box = $(event.target).getParent('.'+this.options.errorClassName);
-          var element = box.retrieve('element');
           if(box) {
+            var element = box.retrieve('element');
             this.blur();
             this.hideError(element);
           }
@@ -287,7 +290,7 @@ Formular = new Class({
   getFirstVisibleErrorBox : function() {
     for(var i in this.boxes) {
       var box = this.boxes[i];
-      if(box.getStyle('display') == 'block') {
+      if(box && box.getStyle('display') == 'block') {
         return box;
       }
     }
@@ -319,7 +322,9 @@ Formular = new Class({
     var boxes = this.boxes;
     for(var i in boxes) {
       var box = boxes[i];
-      box.destroy();
+      if(box) {
+        box.destroy();
+      }
     }
   },
 
@@ -358,7 +363,7 @@ Formular = new Class({
   anyErrorBoxesVisible : function() {
     for(var i in this.boxes) {
       var box = this.boxes[i];
-      if(box.getStyle('display') == 'block') {
+      if(box && box.getStyle('display') == 'block') {
         return true;
       }
     }
@@ -368,8 +373,10 @@ Formular = new Class({
   hideAllErrors : function() {
     for(var i in this.boxes) {
       var box = this.boxes[i];
-      var element = box.retrieve('element');
-      this.hideError(element);
+      if(box) {
+        var element = box.retrieve('element');
+        this.hideError(element);
+      }
     }
   },
 
@@ -378,25 +385,33 @@ Formular = new Class({
       this.onValidationSuccess();
     }
     else { //there must exist an error
-      if(this.options.focusOnFirstError) {
-        this.focusOnFirstVisibleError(); 
-      }
-      if(this.options.scrollToFirstError) {
-        this.scrollToFirstVisibleError();
-      }
+      this.onInvalidFields();
       this.onValidationFailure();
+    }
+  },
+
+  onInvalidFields : function() {
+    if(this.options.focusOnFirstError) {
+      this.focusOnFirstVisibleError(); 
+    }
+    if(this.options.scrollToFirstError) {
+      this.scrollToFirstVisibleError();
     }
   },
 
   scrollToFirstVisibleError : function() {
     var box = this.getFirstVisibleErrorBox();
-    this.scroller.toElement(box);
+    if(box) {
+      this.scroller.toElement(box);
+    }
   },
 
   focusOnFirstVisibleError : function() {
     var box = this.getFirstVisibleErrorBox();
-    var input = box.retrieve('element');
-    input.focus();
+    if(box) {
+      var input = box.retrieve('element');
+      input.focus();
+    }
   },
 
   onValidationSuccess : function() {
@@ -478,13 +493,17 @@ Formular = new Class({
   },
 
   validateFields : function(fields) {
-		var result = $$(fields).map(function(field){
-			var c = this.validateField(field, true);
-      return c;
-		}, this).every(function(v){
-			return v;
-		});
-    return result;
+    var fields = $$(fields);
+		var fieldResults = $$(fields).map(function(field){
+			return this.validateField(field, true);
+		}, this);
+    var fullyValid = fieldResults.every(function(v) {
+      return v;
+    });
+    if(!fullyValid) {
+      this.onInvalidFields();
+    }
+    return fullyValid;
   },
 
   isSubmitting : function() {
