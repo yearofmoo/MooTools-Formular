@@ -26,6 +26,7 @@ Formular = new Class({
       y : 0
     },
     allowClose : true,
+    closeErrorsOnDelay : 0,
     animateFields : false,
     validationFailedAnimationClassName : 'formular-validation-failed',
     fieldSelectors : '.required',
@@ -252,18 +253,7 @@ Formular = new Class({
     elm.store('element',element);
 
     if(this.options.allowClose) {
-      close = elm.getElement('.close');
-      if(close) {
-        close.addEvent('click',function(event) {
-          event.stop();
-          var box = $(event.target).getParent('.'+this.options.errorClassName);
-          if(box) {
-            var element = box.retrieve('element');
-            this.blur();
-            this.hideError(element);
-          }
-        }.bind(this));
-      }
+      elm.getElement('.close').addEvent('click',this.onCloseError.bind(this));
     }
 
     return elm;
@@ -271,6 +261,21 @@ Formular = new Class({
 
   blur : function() {
     this.getFields()[0].blur();
+  },
+
+  onCloseError : function(event) {
+    event.stop();
+    var box = $(event.target).getParent('.'+this.options.errorClassName);
+    if(box) {
+      var element = box.retrieve('element');
+      this.blur();
+      this.hideError(element);
+    }
+  },
+
+  onCloseErrorDelay : function(element) {
+    this.blur();
+    this.hideError(element);
   },
 
   getErrorBox : function(element) {
@@ -340,11 +345,26 @@ Formular = new Class({
           'opacity':0,
           'display':'block'
         }).tween('opacity',1);
+
+        if(this.options.allowClose && this.options.closeErrorsOnDelay > 0) {
+          this.delayErrorClose(element);
+        }
       }
       else if(old != message) { 
         box.setOpacity(0.5).fade(1);
       }
     }
+  },
+
+  delayErrorClose : function(element) {
+    var delay = this.options.closeErrorsOnDelay;
+    if(this.closeTimer) {
+      clearTimeout(this.closeTimer);
+      this.closeTimer = null;
+    }
+    this.closeTimer = (function() {
+      this.onCloseErrorDelay(element);
+    }).delay(delay,this);
   },
 
   hideError : function(element) {
