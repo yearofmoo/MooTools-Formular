@@ -1,0 +1,3 @@
+[submodule "Test/JazzMint"]
+	path = Test/JazzMint
+	url = git://github.com/matsko/JazzMint.git
