@@ -82,10 +82,6 @@
   font-size:1.2em;
 }
 
-.formular-inline .txt:first-word {
-  display:block;
-}
-
 /* theme specific */
 .formular-red .c { background:url(themes/red/c.png) repeat; }
 .formular-red .tl { background-image:url(themes/red/tl.png); }
